@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat</title>
+</head>
+<body>
+
+<div style="text-align: center;">
+    <h1 id="info"></h1>
+    <form onsubmit="sendMessage(); return false;">
+        <input type="text" id="messageArea" placeholder="Wpisz wiadomość">
+    </form>
+</div>
+
+<script type="text/javascript">
+    var websocketLink = "ws://localhost:8080/room";
+    var infoText = document.getElementById("info");
+    var websocket = new WebSocket(websocketLink);
+    var textArea = document.getElementById("messageArea");
+
+    websocket.onopen = function (ev) {
+        infoText.innerHTML = "Witaj w Chat - zostałeś połączony!";
+    }
+
+    websocket.onmessage = function (ev) {
+        infoText.innerHTML = "Otrzymano wiadomość!";
+    }
+
+    function sendMessage() {
+        var text = textArea.value;
+        textArea.value = "";
+
+        websocket.send(text);
+    }
+
+</script>
+</body>
+</html>
