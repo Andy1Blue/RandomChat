@@ -1,16 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.springframework.org/schema/data/jaxb">
 <head>
     <meta charset="UTF-8">
     <title>Chat</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/main.css}">
 </head>
 <body>
 
 <div style="text-align: center;">
-    <h1 id="info"></h1>
+    <h4 id="info"></h4>
+
     <form onsubmit="sendMessage(); return false;">
         <input type="text" id="messageArea" placeholder="Wpisz wiadomość">
     </form>
+
+    <ul id="messages"></ul>
 </div>
 
 <script type="text/javascript">
@@ -18,22 +22,19 @@
     var infoText = document.getElementById("info");
     var websocket = new WebSocket(websocketLink);
     var textArea = document.getElementById("messageArea");
-
+    var messagesArea = document.getElementById("messages");
     websocket.onopen = function (ev) {
-        infoText.innerHTML = "Witaj w Chat - zostałeś połączony!";
+        infoText.innerHTML = "Witaj w Chat - jesteś połączony!";
     }
-
     websocket.onmessage = function (ev) {
-        infoText.innerHTML = "Otrzymano wiadomość!";
+        messagesArea.innerHTML = messagesArea.innerHTML + "<li>" + ev.data + "</li>";
+        messagesArea.scrollTop = messagesArea.scrollHeight;
     }
-
     function sendMessage() {
         var text = textArea.value;
         textArea.value = "";
-
         websocket.send(text);
     }
-
 </script>
 </body>
 </html>
