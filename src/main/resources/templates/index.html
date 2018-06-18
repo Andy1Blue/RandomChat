@@ -23,6 +23,7 @@
     var websocket = new WebSocket(websocketLink);
     var textArea = document.getElementById("messageArea");
     var messagesArea = document.getElementById("messages");
+
     websocket.onopen = function (ev) {
         infoText.innerHTML = "Witaj w Chat - jesteś połączony!";
     }
@@ -30,6 +31,7 @@
         messagesArea.innerHTML = messagesArea.innerHTML + "<li>" + ev.data + "</li>";
         messagesArea.scrollTop = messagesArea.scrollHeight;
     }
+
     function sendMessage() {
         var text = textArea.value;
         textArea.value = "";
