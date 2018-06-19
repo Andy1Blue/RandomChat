@@ -9,29 +9,80 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
-import java.util.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
 
 @Component
 public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigurer {
 
-    private List<WebSocketSession> userList = new ArrayList<>();
+    private List<UserModel> userList = new ArrayList<>();
     private Queue<String> lastTenMessages = new ArrayDeque<>();
 
     private TextMessage getActualTime() {
-        Calendar d = Calendar.getInstance();
-        return new TextMessage("(" + d.get(Calendar.HOUR) + ":" + d.get(Calendar.MINUTE) + ":" + d.get(Calendar.SECOND) + ") ");
+        String hour = "";
+        String minute = "";
+        String secound = "";
+        LocalDateTime timePoint = LocalDateTime.now(
+        );
+        int hLength = String.valueOf(timePoint.getHour()).length();
+        if (hLength == 1){
+            hour = "0" + String.valueOf(timePoint.getHour());
+        } else {
+            hour = String.valueOf(timePoint.getHour());
+        }
+        int mLength = String.valueOf(timePoint.getMinute()).length();
+        if (mLength == 1){
+            minute = "0" + String.valueOf(timePoint.getMinute());
+        } else {
+            minute = String.valueOf(timePoint.getMinute());
+        }
+        int sLength = String.valueOf(timePoint.getSecond()).length();
+        if (sLength == 1){
+            secound = "0" + String.valueOf(timePoint.getSecond());
+        } else {
+            secound = String.valueOf(timePoint.getSecond());
+        }
+        return new TextMessage("(" + hour + ":" + minute + ":" + secound + ") ");
     }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        addMessageToQue(getActualTime().getPayload() + message.getPayload());
+        UserModel sender = findBySession(session);
+
+        if(message.getPayload().startsWith("nickname:")){
+            if(sender.getNickname() == null){
+                sender.setNickname(message.getPayload().replace("nickname:", ""));
+            }else{
+                sender.sendMessage(new TextMessage("Nie możesz zmienić nicku więcej razy!"));
+            }
+            return;
+        }
+
+        if(sender.getNickname() == null){
+            sender.sendMessage(new TextMessage("Najpierw ustal nick!"));
+            return;
+        }
+
+        addMessageToQue(sender.getNickname() + ": " +getActualTime().getPayload() + message.getPayload());
         userList.forEach(s -> {
             try {
-                s.sendMessage(new TextMessage(getActualTime().getPayload()+message.getPayload()));
+                s.sendMessage(new TextMessage(sender.getNickname() + ": " +getActualTime().getPayload() + message.getPayload()));
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
+
+    }
+
+    private UserModel findBySession(WebSocketSession webSocketSession){
+        return userList.stream()
+                .filter(s -> s.getUserSession().getId().equals(webSocketSession.getId()))
+                .findAny()
+                .orElseThrow(IllegalStateException::new);
     }
 
     @Override
@@ -41,7 +92,7 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        userList.add(session);
+        userList.add(new UserModel(session));
 
         lastTenMessages.forEach(s -> {
             try {

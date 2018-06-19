@@ -10,6 +10,10 @@
 <div style="text-align: center;">
     <h4 id="info"></h4>
 
+    <form onsubmit="sendNickname(); return false;">
+        <input type="text" id="nicknameArea" placeholder="Wpisz nick">
+    </form>
+
     <form onsubmit="sendMessage(); return false;">
         <input type="text" id="messageArea" placeholder="Wpisz wiadomość">
     </form>
@@ -36,6 +40,12 @@
         var text = textArea.value;
         textArea.value = "";
         websocket.send(text);
+    }
+
+    function sendNickname() {
+        var text = nicknameArea.value;
+        nicknameArea.value = "";
+        websocket.send("nickname:" + text);
     }
 </script>
 </body>
