@@ -7,17 +7,26 @@
 </head>
 <body>
 
-<div style="text-align: center;">
+<div class="left-box">
     <h4 id="info"></h4>
-
     <form onsubmit="sendNickname(); return false;">
-        <input type="text" id="nicknameArea" placeholder="Wpisz nick">
+        <input type="text" id="nicknameArea" placeholder="Wpisz nick...">
     </form>
-
+    <h4>Lista zalogowanych</h4>
+    <ul>
+        <li>Test 1 (<a>napisz priv</a>)</li>
+        <li>Test 2 (<a>napisz priv</a>)</li>
+        <li>Test 3 (<a>napisz priv</a>)</li>
+    </ul>
+    <h4>Lista poleceń</h4>
+    <li>/kick Nick - wyrzuca użytkownika</li>
+    <li>/add Nick - dodaje użytkownika</li>
+</div>
+<div class="right-box">
+    <h4>Okno chatu</h4>
     <form onsubmit="sendMessage(); return false;">
-        <input type="text" id="messageArea" placeholder="Wpisz wiadomość">
+        <input type="text" id="messageArea" placeholder="Wpisz wiadomość...">
     </form>
-
     <ul id="messages"></ul>
 </div>
 
@@ -29,7 +38,8 @@
     var messagesArea = document.getElementById("messages");
 
     websocket.onopen = function (ev) {
-        infoText.innerHTML = "Witaj w Chat - jesteś połączony!";
+        infoText.innerHTML = "Random Chat";
+        messagesArea.innerHTML = "Witaj, jesteś połączony/a!"
     }
     websocket.onmessage = function (ev) {
         messagesArea.innerHTML = messagesArea.innerHTML + "<li>" + ev.data + "</li>";
@@ -46,6 +56,10 @@
         var text = nicknameArea.value;
         nicknameArea.value = "";
         websocket.send("nickname:" + text);
+        if (text != null){
+            document.getElementById("nicknameArea").value = "Twój nick: " + text;
+            document.getElementById("nicknameArea").disabled = true;
+        }
     }
 </script>
 </body>

@@ -67,15 +67,28 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
             return;
         }
 
-        addMessageToQue(sender.getNickname() + ": " +getActualTime().getPayload() + message.getPayload());
+        addMessageToQue(getActualTime().getPayload() + sender.getNickname() + ": " + message.getPayload());
         userList.forEach(s -> {
             try {
-                s.sendMessage(new TextMessage(sender.getNickname() + ": " +getActualTime().getPayload() + message.getPayload()));
+                s.sendMessage(new TextMessage(getActualTime().getPayload() + sender.getNickname() + ": " + message.getPayload()));
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
 
+    }
+
+    private void sendMessgaeToAllWithoutSender(String message, UserModel sender){
+        userList.stream()
+                .filter(s -> !s.equals(sender))
+                .forEach(s -> {
+                    try {
+                        s.sendMessage(new TextMessage(message));
+
+                    } catch (IOException e){
+                        e.printStackTrace();
+                    }
+                });
     }
 
     private UserModel findBySession(WebSocketSession webSocketSession){
@@ -87,7 +100,8 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        userList.remove(session);
+        UserModel userWhoIsExiting = findBySession(session);
+        userList.remove(userWhoIsExiting);
     }
 
     @Override
@@ -110,10 +124,12 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
     }
 
     private void addMessageToQue(String message) {
+        if (lastTenMessages.size() == 0) {
+            lastTenMessages.offer("Ostatnie 10 wiadomości:");
+        }
         if (lastTenMessages.size() >= 10) {
             lastTenMessages.poll();
         }
-
         lastTenMessages.offer(message);
     }
 }
